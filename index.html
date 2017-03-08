@@ -9,38 +9,46 @@
         const context = canvas.getContext('2d');
 
         const camera = {
-            width: 4,
-            height: 4,
+            width: 200,
+            height: 200,
             x: 0,
             y: 0,
         };
 
-        const pixelSize = 100;
-        const width = 10;
-        const height = 10;
-        const pixels = [
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(5,220,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(0,0,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)']
-        ];
+        const pixelSize = 10;
+        const width = 800;
+        const height = 800;
 
-        const viewport = () => {
-            const copy = pixels.slice();
-            return copy.slice(camera.y, camera.height + camera.y).map(row => {
-                const copy = row.slice();
-                return copy.slice(camera.x, camera.width + camera.x);
-            });
+        function generateCanvas(width, height) {
+            let array = new Array(height)
+            for(var y = 0; y < height; y++){
+                array[y] = new Array(width)
+                for (var x=0; x < width; x++){
+                    let red = 30 + Math.floor(Math.random() * 195);
+                    let green = 30 + Math.floor(Math.random() * 195);
+                    let blue = 30 + Math.floor(Math.random() * 195);
+                    array[y][x] = "rgb("+red+","+green+","+blue+")";
+                }
+            }
+            return array;
         }
 
-        const draw = () => {
-            const pixels = viewport();
+        const pixels = generateCanvas(width, height);
+
+        const viewport = () => {
+            const rows = pixels.slice(camera.y, camera.height + camera.y);
+            if (rows.length === camera.height) {
+                const colOutOfBounds = rows.find(row => row.slice(camera.x, camera.width + camera.x).length !== camera.width);
+                if (!colOutOfBounds) {
+                    return rows.map(row => {
+                        return row.slice(camera.x, camera.width + camera.x);
+                    });
+                }
+            }
+            return null;
+        }
+
+        const draw = (pixels) => {
             context.clearRect(0, 0, width*pixelSize, height*pixelSize);
             for (let y = 0; y < pixels.length; y++) {
                 for (let x = 0; x < pixels[y].length; x++) {
@@ -50,9 +58,13 @@
             }
         }
 
-        draw();
+        draw(viewport());
 
         document.onkeydown = (event) => {
+            const prevPositions =  {
+                x: camera.x,
+                y: camera.y,
+            };
             switch(event.keyCode) {
                 case 37: { // left
                     camera.x -= 1;
@@ -71,7 +83,13 @@
                     break;
                 }
             }
-            draw();
+            const updatedViewport = viewport();
+            if (updatedViewport) {
+                draw(updatedViewport);
+            } else {
+                camera.x = prevPositions.x;
+                camera.y = prevPositions.y;
+            }
         }
 
 
