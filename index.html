@@ -9,10 +9,8 @@
         const context = canvas.getContext('2d');
 
         const camera = {
-            size: {
-                width: 200,
-                height: 200,
-            },
+            width: 4,
+            height: 4,
             x: 0,
             y: 0,
         };
@@ -23,7 +21,7 @@
         const pixels = [
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
-            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(5,220,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(0,0,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
@@ -33,8 +31,16 @@
             ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)']
         ];
 
+        const viewport = () => {
+            const copy = pixels.slice();
+            return copy.slice(camera.y, camera.height + camera.y).map(row => {
+                const copy = row.slice();
+                return copy.slice(camera.x, camera.width + camera.x);
+            });
+        }
 
-        const clear = () => {
+        const draw = () => {
+            const pixels = viewport();
             context.clearRect(0, 0, width*pixelSize, height*pixelSize);
             for (let y = 0; y < pixels.length; y++) {
                 for (let x = 0; x < pixels[y].length; x++) {
@@ -44,33 +50,24 @@
             }
         }
 
-        const draw = () => {
-            clear();
-            context.strokeStyle = 'rgb(255,0,0)';
-            context.beginPath();
-            context.rect(camera.x, camera.y, camera.size.width, camera.size.height);
-            context.stroke();
-            context.closePath();
-        };
-
         draw();
 
         document.onkeydown = (event) => {
             switch(event.keyCode) {
                 case 37: { // left
-                    camera.x -= pixelSize;
+                    camera.x -= 1;
                     break;
                 }
                 case 38: { // up
-                    camera.y -= pixelSize;
+                    camera.y -= 1;
                     break;
                 }
                 case 39: { // right
-                    camera.x += pixelSize;
+                    camera.x += 1;
                     break;
                 }
                 case 40: { // down
-                    camera.y += pixelSize;
+                    camera.y += 1;
                     break;
                 }
             }
