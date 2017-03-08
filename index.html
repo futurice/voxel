@@ -1,0 +1,83 @@
+<html>
+<head>
+    <title>Voxel</title>
+</head>
+<body>
+    <canvas id='canvas' width='960' height='720'/>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        const camera = {
+            size: {
+                width: 200,
+                height: 200,
+            },
+            x: 0,
+            y: 0,
+        };
+
+        const pixelSize = 100;
+        const width = 10;
+        const height = 10;
+        const pixels = [
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(0,0,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)'],
+            ['rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)','rgb(100,120,0)']
+        ];
+
+
+        const clear = () => {
+            context.clearRect(0, 0, width*pixelSize, height*pixelSize);
+            for (let y = 0; y < pixels.length; y++) {
+                for (let x = 0; x < pixels[y].length; x++) {
+                    context.fillStyle = pixels[y][x];
+                    context.fillRect(x * pixelSize, y * pixelSize,  pixelSize,  pixelSize);
+                }
+            }
+        }
+
+        const draw = () => {
+            clear();
+            context.strokeStyle = 'rgb(255,0,0)';
+            context.beginPath();
+            context.rect(camera.x, camera.y, camera.size.width, camera.size.height);
+            context.stroke();
+            context.closePath();
+        };
+
+        draw();
+
+        document.onkeydown = (event) => {
+            switch(event.keyCode) {
+                case 37: { // left
+                    camera.x -= pixelSize;
+                    break;
+                }
+                case 38: { // up
+                    camera.y -= pixelSize;
+                    break;
+                }
+                case 39: { // right
+                    camera.x += pixelSize;
+                    break;
+                }
+                case 40: { // down
+                    camera.y += pixelSize;
+                    break;
+                }
+            }
+            draw();
+        }
+
+
+    </script>
+</body>
+</html>
