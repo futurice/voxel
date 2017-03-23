@@ -57,28 +57,42 @@ const setCamera = (pixelMap) => {
 const line = (x0, y0, x1, y1) => {
   const res = [];
   const deltax = x1 - x0;
-  const deltay = y1 - y0;
-  const deltaerr = Math.abs(deltay / deltax);
-  const error = deltaerr - 0.5;
-  let y = Math.floor(y0);
-  for (let x = x0; x0 < x1; x++) {
-    res.push({ x, y });
-    let error = error + deltaerr
-    if (error >= 0.5) {
-      y = y + 1
-      error = error - 1.0
+  if (deltax === 0) {
+    const x = Math.floor(x1);
+    const ay0 = Math.floor((y0 - y1) > 0 ? y1 : y0);
+    const ay1 = Math.floor((y0 - y1) > 0 ? y0 : y1);
+    for (let y = ay0; y < ay1; y++) {
+      res.push({ x, y });
+    }
+  } else {
+    const deltay = y1 - y0;
+    const deltaerr = Math.abs(deltay / deltax);
+    let error = deltaerr - 0.5;
+    let y = Math.floor(y0);
+    const ax0 = Math.floor((x0 - x1) > 0 ? x1 : x0);
+    const ax1 = Math.floor((x0 - x1) > 0 ? x0 : x1);
+    for (let x = ax0; x < ax1; x++) {
+      res.push({ x, y });
+      error = error + deltaerr
+      if (error >= 0.5) {
+        y = (y1 - y0) > 0 ? y + 1 : y - 1;
+        error = error - 1.0
+      }
     }
   }
+  return res;
 }
 
 const setViewport = (pixelMap) => {
   const pm = pixelMap.slice()
-  console.log(line(viewport.x, viewport.y, ));
+  for (let lineCoords of line(camera.x, camera.y+10, camera.x+3, camera.y)) {
+    pm[lineCoords.y][lineCoords.x] = 1;
+  }
   return pm;
 }
 
 const update = () => {
-  draw(setCamera(pixelMap));
+  draw(setViewport(setCamera(pixelMap)));
 }
 
 update();
