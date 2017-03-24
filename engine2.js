@@ -8,12 +8,12 @@ const viewport = {
 
 const camera = {
   x: 3,
-  y: 0,
+  y: 3,
 }
 
 const pixelSize = 10;
-const width = 800;
-const height = 800;
+const width = 400;
+const height = 400;
 
 function generateCanvas(width, height) {
   let array = new Array(height)
@@ -70,20 +70,31 @@ const line = (x0, y0, x1, y1) => {
       const deltaerr = Math.abs(deltay / deltax);
       let error = deltaerr - 0.5;
       let y = Math.floor(y0);
-      const ax0 = Math.floor((x0 - x1) > 0 ? x1 : x0);
-      const ax1 = Math.floor((x0 - x1) > 0 ? x0 : x1);
-      for (let x = ax0; x < ax1; x++) {
-        res.push({ x, y });
-        error = error + deltaerr
-        if (error >= 0.5) {
-          y = (y1 - y0) > 0 ? y + 1 : y - 1;
-          error = error - 1.0
+      if (x0 < x1) {
+        for (let x = x0; x < x1; x++) {
+          res.push({ x, y });
+          error = error + deltaerr
+          if (error >= 0.5) {
+            y = (y1 - y0) > 0 ? y + 1 : y - 1;
+            error = error - 1.0
+          }
+        }
+      } else if (x0 > x1) {
+        for (let x = x0; x > x1; x--) {
+          console.log(x1, x0, x)
+          res.push({ x, y });
+          error = error + deltaerr
+          if (error >= 0.5) {
+            y = (y1 - y0) > 0 ? y + 1 : y - 1;
+            error = error - 1.0
+          }
         }
       }
     }
     return res;
   }
-  if (Math.abs(x0 - x1) >= Math.abs(y0 - y1)) {
+
+  if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
     return foo(x0, y0, x1, y1);
   } else {
     return foo(y0, x0, y1, x1).map(({x, y}) => { return { x: y, y: x} });
@@ -92,14 +103,37 @@ const line = (x0, y0, x1, y1) => {
 
 const setViewport = (pixelMap) => {
   const pm = pixelMap.slice()
-  for (let lineCoords of line(camera.x, camera.y, camera.x+16, camera.y+20)) {
+  console.log(camera.x, camera.y, height / (pixelSize * 2), width / (pixelSize * 2))
+  for (let lineCoords of line(camera.x, camera.y, height / (pixelSize * 2), width / (pixelSize * 2))) {
     pm[lineCoords.y][lineCoords.x] = 1;
   }
   return pm;
 }
 
 const update = () => {
-  draw(setViewport(setCamera(pixelMap)));
+  draw(setCamera(setViewport(generateCanvas(width, height))));
 }
 
 update();
+
+document.onkeydown = (event) => {
+  switch(event.keyCode) {
+    case 37: { // left
+      camera.x -= 1;
+      break;
+    }
+    case 38: { // up
+      camera.y -= 1;
+      break;
+    }
+    case 39: { // right
+      camera.x += 1;
+      break;
+    }
+    case 40: { // down
+      camera.y += 1;
+      break;
+    }
+  }
+  update();
+}
