@@ -81,7 +81,6 @@ const line = (x0, y0, x1, y1) => {
         }
       } else if (x0 > x1) {
         for (let x = x0; x > x1; x--) {
-          console.log(x1, x0, x)
           res.push({ x, y });
           error = error + deltaerr
           if (error >= 0.5) {
@@ -95,9 +94,9 @@ const line = (x0, y0, x1, y1) => {
   }
 
   if (Math.abs(x0 - x1) > Math.abs(y0 - y1)) {
-    return foo(x0, y0, x1, y1);
+    return foo(x0, y0, x1, y1).concat({ x: x1, y: y1 });
   } else {
-    return foo(y0, x0, y1, x1).map(({x, y}) => { return { x: y, y: x} });
+    return foo(y0, x0, y1, x1).map(({x, y}) => { return { x: y, y: x} }).concat({ x: x1, y: y1 });
   }
 }
 
