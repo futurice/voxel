@@ -7,20 +7,22 @@ const viewport = {
 };
 
 const camera = {
-  x: 3,
+  x: 1,
   y: 20,
+  z: 0,
 }
 
 const pixelSize = 10;
 const width = 400;
 const height = 400;
+const depth = 20;
 
 function generateCanvas(width, height) {
   let array = new Array(height)
   for(var y = 0; y < height; y++){
     array[y] = new Array(width)
     for (var x=0; x < width; x++) {
-      array[y][x] = 0;
+      array[y][x] = 'rgb(230,230,230)';
     }
   }
   return array;
@@ -29,14 +31,14 @@ function generateCanvas(width, height) {
 const pixelMap = generateCanvas(width, height);
 
 const toColor = (value) => {
-  if (value === 1) {
-    return 'rgb(0,0,0)';
-  } else if (value === 2) {
-    return 'rgb(230,0,0)';
-  } else if (value === 3) {
-    return 'rgb(0,0,230)';
+  if (typeof value === 'string') {
+    return value;
   }
-  return 'rgb(230,230,230)';
+  if (value >= 0) {
+    return 'rgb('+(Math.abs(Math.floor(value/depth * 255)))+','+(Math.abs(Math.floor((value/depth * 255))))+',0)';
+  }
+  return 'rgb(0,'+(Math.abs(Math.floor((value/depth * 255))))+','+(Math.abs(Math.floor(value/depth * 255)))+')';
+
 }
 
 const draw = (pixels) => {
@@ -50,31 +52,9 @@ const draw = (pixels) => {
 
 const setCamera = (pixelMap) => {
   const pm = pixelMap.slice()
-  pm[camera.y][camera.x] = 2;
+  pm[camera.y][camera.x] = 'rgb(230, 0, 0)';;
   return pm;
 }
-
-// function* bresenham({ a: a0, b: b0 }, { a: a1, b: b1 }) {
-//   const deltaA = a1 - a0;
-//   const deltaB = b1 - b0;
-//   if (deltaA < deltaB) {
-//     throw Error(`${a1} - ${a0} = ${deltaA} cannot be than less than ${b1} - ${b0} = ${deltaB}`);
-//   }
-//   if (deltaA === 0) {
-//
-//   }
-//   const deltaErr = Math.abs(deltaA / deltaB);
-//   let error = deltaErr - 0.5;
-//   let b = Math.floor(b0);
-//   for (let a = a0; a < a1; a++) {
-//     yield { a, b };
-//     error = error + deltaErr;
-//     if (error >= 0.5) {
-//       b += 1;
-//       error = error - 1.0;
-//     }
-//   }
-// }
 
 // A three-dimensional Bresenham
 function* bresenham({ a: a0, b: b0, c: c0 }, { a: a1, b: b1, c: c1 }) {
@@ -127,32 +107,29 @@ const line = ({ x: x0, y: y0, z: z0 }, { x: x1, y: y1, z: z1 }) => {
   let aSign, bSign, cSign;
 
   let iterator = null;
-
-  /*
-  Octants:
-   \2|1/
-   3\|/0
-  ---+---
-   4/|\7
-   /5|6\
-  */
-  // octants. TODO: octagons
-  const ratioXY = Math.abs(deltaX / deltaY);
+  const max = Math.max(Math.abs(deltaX), Math.abs(deltaY), Math.abs(deltaZ));
+  const maxIsX = max === Math.abs(deltaX);
+  const maxIsY = max === Math.abs(deltaY);
+  const maxIsZ = max === Math.abs(deltaZ);
   const signX = deltaX ? Math.sign(deltaX) : 1;
   const signY = deltaY ? Math.sign(deltaY) : 1;
-  if (ratioXY > 1.0) {
-    iterator = bresenham({ a: signX * x0, b: signY * y0, c: z0 }, { a: signX * x1, b: signY * y1, c: z1 });
+  const signZ = deltaZ ? Math.sign(deltaZ) : 1;
+
+  if (maxIsX) {
+    iterator = bresenham({ a: signX * x0, b: signY * y0, c: signZ * z0 }, { a: signX * x1, b: signY * y1, c: signZ * z1 });
     aAsCoord = 'x'; bAsCoord = 'y'; cAsCoord = 'z';
-    aSign = signX * 1; bSign = signY * 1; cSign = 1;
-  } else if (ratioXY <= 1.0) {
-    iterator = bresenham({ a: signY * y0, b: signX * x0, c: z0 }, { a: signY * y1, b: signX * x1, c: z1 });
+    aSign = signX * 1; bSign = signY * 1; cSign = signZ * 1;
+  } else if (maxIsY) {
+    iterator = bresenham({ a: signY * y0, b: signX * x0, c: signZ * z0 }, { a: signY * y1, b: signX * x1, c: signZ * z1 });
     aAsCoord = 'y'; bAsCoord = 'x'; cAsCoord = 'z';
-    aSign = signY * 1; bSign = signX * 1; cSign = 1;
+    aSign = signY * 1; bSign = signX * 1; cSign = signZ * 1;
+  } else if (maxIsZ) {
+    iterator = bresenham({ a: signZ * z0, b: signX * x0, c: signY * y0 }, { a: signZ * z1, b: signX * x1, c: signY * y1 });
+    aAsCoord = 'z'; bAsCoord = 'x'; cAsCoord = 'y';
+    aSign = signZ * 1; bSign = signX * 1; cSign = signY * 1;
   }
-  if (iterator) {
-    for (let { a, b, c } of iterator) {
-      res.push({ [aAsCoord]: aSign * a, [bAsCoord]: bSign * b, [cAsCoord]: cSign * c });
-    }
+  for (let { a, b, c } of iterator) {
+    res.push({ [aAsCoord]: aSign * a, [bAsCoord]: bSign * b, [cAsCoord]: cSign * c });
   }
   return res;
 };
@@ -160,11 +137,17 @@ const line = ({ x: x0, y: y0, z: z0 }, { x: x1, y: y1, z: z1 }) => {
 
 const setViewport = (pixelMap) => {
   const pm = pixelMap.slice()
-  for (let lineCoords of line({ x: camera.x, y: camera.y, z: 0 }, { x : height / (pixelSize * 2), y: width / (pixelSize * 2), z: 0 })) {
+  var z = camera.z;
+  for (let lineCoords of line({ x: camera.x, y: camera.y, z: z }, { x : height / (pixelSize * 2), y: width / (pixelSize * 2), z: 0 })) {
     if (!pm[lineCoords.y] || !pm[lineCoords.x]) {
       console.error('Out-of-bounds', lineCoords);
     }
-    pm[lineCoords.y][lineCoords.x] = 1;
+    if (!((z + 1 === lineCoords.z) || (z === lineCoords.z) || (z - 1 === lineCoords.z))) {
+      console.log('ops', z, lineCoords.z);
+    }
+    z = lineCoords.z;
+    console.log(lineCoords.z);
+    pm[lineCoords.y][lineCoords.x] = lineCoords.z;
   }
   return pm;
 }
@@ -173,7 +156,6 @@ const update = () => {
   draw(setCamera(setViewport(generateCanvas(width, height))));
 }
 
-//console.log(JSON.stringify(line({ x: 0, y: 0, z: 0 }, { x: 5, y: 0, z: 3 })));
 update();
 
 document.onkeydown = (event) => {
@@ -192,6 +174,18 @@ document.onkeydown = (event) => {
     }
     case 40: { // down
       camera.y += 1;
+      break;
+    }
+    case 81: { // q == zoom-out
+      if (camera.z <= depth) {
+        camera.z += 1;
+      }
+      break;
+    }
+    case 69: { // e == zoom-in
+      if (camera.z >= -depth) {
+        camera.z -= 1;
+      }
       break;
     }
   }
