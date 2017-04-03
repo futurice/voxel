@@ -137,46 +137,17 @@ const line = ({ x: x0, y: y0, z: z0 }, { x: x1, y: y1, z: z1 }) => {
    /5|6\
   */
   // octants. TODO: octagons
-  if (deltaX / deltaY >= 1.0 && deltaX >= 0 && deltaY >= 0) {
-    console.log('Octant: 3');
-    iterator = bresenham({ a: x0, b: y0, c: z0 }, { a: x1, b: y1, c: z1 });
+  const ratioXY = Math.abs(deltaX / deltaY);
+  const signX = deltaX ? Math.sign(deltaX) : 1;
+  const signY = deltaY ? Math.sign(deltaY) : 1;
+  if (ratioXY > 1.0) {
+    iterator = bresenham({ a: signX * x0, b: signY * y0, c: z0 }, { a: signX * x1, b: signY * y1, c: z1 });
     aAsCoord = 'x'; bAsCoord = 'y'; cAsCoord = 'z';
-    aSign = 1; bSign = 1; cSign = 1;
-  } else if (deltaX / deltaY < 1.0 && deltaX >= 0 && deltaY >= 0) {
-    console.log('Octant: 2');
-    iterator = bresenham({ a: y0, b: x0, c: z0 }, { a: y1, b: x1, c: z1 });
+    aSign = signX * 1; bSign = signY * 1; cSign = 1;
+  } else if (ratioXY <= 1.0) {
+    iterator = bresenham({ a: signY * y0, b: signX * x0, c: z0 }, { a: signY * y1, b: signX * x1, c: z1 });
     aAsCoord = 'y'; bAsCoord = 'x'; cAsCoord = 'z';
-    aSign = 1; bSign = 1; cSign = 1;
-  } else if (-deltaX / deltaY <= 1.0 && deltaX <= 0 && deltaY >= 0) {
-    console.log('Octant: 1');
-    iterator = bresenham({ a: y0, b: -x0, c: z0 }, { a: y1, b: -x1, c: z1 });
-    aAsCoord = 'y'; bAsCoord = 'x'; cAsCoord = 'z';
-    aSign = 1; bSign = -1; cSign = 1;
-  }  else if (-deltaX / deltaY >= 1.0 && deltaX <= 0 && deltaY >= 0) {
-    console.log('Octant: 0');
-    iterator = bresenham({ a: -x0, b: y0, c: z0 }, { a: -x1, b: y1, c: z1 });
-    aAsCoord = 'x'; bAsCoord = 'y'; cAsCoord = 'z';
-    aSign = -1; bSign = 1; cSign = 1;
-  } else if (deltaX / -deltaY >= 1.0 && deltaX >= 0 && deltaY <= 0) { // <-
-    console.log('Octant: 4');
-    iterator = bresenham({ a: x0, b: -y0, c: z0 }, { a: x1, b: -y1, c: z1 });
-    aAsCoord = 'x'; bAsCoord = 'y'; cAsCoord = 'z';
-    aSign = 1; bSign = -1; cSign = 1;
-  } else if (deltaX / -deltaY < 1.0 && deltaX >= 0 && deltaY <= 0) {
-    console.log('Octant: 5');
-    iterator = bresenham({ a: -y0, b: x0, c: z0 }, { a: -y1, b: x1, c: z1 });
-    aAsCoord = 'y'; bAsCoord = 'x'; cAsCoord = 'z';
-    aSign = -1; bSign = 1; cSign = 1;
-  } else if (-deltaX / -deltaY <= 1.0 && deltaX <= 0 && deltaY <= 0) {
-    console.log('Octant: 6');
-    iterator = bresenham({ a: -y0, b: -x0, c: z0 }, { a: -y1, b: -x1, c: z1 });
-    aAsCoord = 'y'; bAsCoord = 'x'; cAsCoord = 'z';
-    aSign = -1; bSign = -1; cSign = 1;
-  }  else if (-deltaX / -deltaY >= 1.0 && deltaX <= 0 && deltaY <= 0) {
-    console.log('Octant: 7');
-    iterator = bresenham({ a: -x0, b: -y0, c: z0 }, { a: -x1, b: -y1, c: z1 });
-    aAsCoord = 'x'; bAsCoord = 'y'; cAsCoord = 'z';
-    aSign = -1; bSign = -1; cSign = 1;
+    aSign = signY * 1; bSign = signX * 1; cSign = 1;
   }
   if (iterator) {
     for (let { a, b, c } of iterator) {
